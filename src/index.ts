@@ -5,6 +5,7 @@ import { connectDB } from "./config/db";
 import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import transactionRoutes from './routes/transactionRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.use(async (req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Test Routes
 app.get('/', (req: Request, res: Response) => {
