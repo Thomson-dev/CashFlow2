@@ -6,6 +6,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import transactionRoutes from './routes/transactionRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
+import chatbotRoutes from './routes/chatbotRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -40,6 +41,7 @@ app.use(async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Test Routes
 app.get('/', (req: Request, res: Response) => {

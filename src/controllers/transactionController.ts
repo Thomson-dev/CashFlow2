@@ -3,27 +3,8 @@ import { GoogleGenAI } from '@google/genai';
 import Transaction from '../models/Transaction';
 import User from '../models/User';
 
-// Gemini API call for categorization using @google/genai
-const ai = new GoogleGenAI({
-  apiKey:  "AIzaSyBeNVHUQFgplVh3g2KhStR-AoAjQettd7U"// Make sure this is set in your .env
-});
 
-async function categorizeWithGemini(description: string, amount: number, type: string): Promise<string> {
-  const prompt = `Categorize this transaction: Description="${description}", Amount=${amount}, Type=${type}. Respond with only the category name.`;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }]
-    });
-    // Extract category from Gemini response
-    const category = response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    return category || 'Uncategorized';
-  } catch (error) {
-    console.error('Gemini API error:', error);
-    return 'Uncategorized';
-  }
-}
 
 // LangChain-like chain: categorize, then create transaction, then update balance
 export const createTransaction = async (req: Request & { user?: any }, res: Response) => {
@@ -43,7 +24,7 @@ export const createTransaction = async (req: Request & { user?: any }, res: Resp
     }
 
     // Chain step 1: Categorize (Gemini or manual)
-    const finalCategory = category || await categorizeWithGemini(description, amount, type);
+    const finalCategory = category ;
 
     // Chain step 2: Create and save the transaction
     const transaction = new Transaction({
