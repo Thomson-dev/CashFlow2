@@ -46,7 +46,7 @@ export const chatWithBot = async (req: Request & { user?: any }, res: Response) 
     // Call enhanced AI service
     try {
       const aiResponse = await axios.post(
-        'http://127.0.0.1:5000/ai/chat',
+        'https://cashflowai-production.up.railway.app/ai/chat',
         context,
         { timeout: 15000 }
       );
@@ -77,6 +77,10 @@ export const chatWithBot = async (req: Request & { user?: any }, res: Response) 
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
 
 // Enhanced fallback with actual data analysis
 function getEnhancedFallbackResponse(message: string, user: any, transactions: any[]) {

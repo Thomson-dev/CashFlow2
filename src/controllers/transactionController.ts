@@ -6,7 +6,7 @@ import User from '../models/User';
 
 
 
-// LangChain-like chain: categorize, then create transaction, then update balance
+
 export const createTransaction = async (req: Request & { user?: any }, res: Response) => {
   try {
     const { type, amount, description, category, date, tags } = req.body;

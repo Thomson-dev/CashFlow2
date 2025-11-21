@@ -211,7 +211,7 @@ export const getInsightsPanel = async (req: Request & { user?: any }, res: Respo
 
     // Call Python/LangChain AI for enhanced insights
     try {
-      const aiResponse = await axios.post("http://127.0.0.1:5000/ai/insights", { insights }, { timeout: 10000 });
+      const aiResponse = await axios.post("https://cashflowai-production.up.railway.app/ai/insights", { insights }, { timeout: 10000 });
       const aiData = aiResponse.data;
 
       res.json({
