@@ -4,10 +4,13 @@ import * as transactionController from '../controllers/transactionController';
 
 const router = Router();
 
-router.post('/', auth, transactionController.createTransaction);
-// router.get('/', auth, transactionController.getTransactions);
-// router.get('/:id', auth, transactionController.getTransaction);
-// router.put('/:id', auth, transactionController.updateTransaction);
-// router.delete('/:id', auth, transactionController.deleteTransaction);
+router.post('/transactions', auth, transactionController.createTransaction);
+router.get('/transactions', auth, transactionController.getTransactions);
+router.get('/transactions/:id', auth, transactionController.getTransactionById);
+router.put('/transactions/:id', auth, transactionController.updateTransaction);
+router.delete('/transactions/:id', auth, transactionController.deleteTransaction);
+router.get('/transactions/category/:category', auth, transactionController.getTransactionsByCategory);
+router.get('/transactions/date-range', auth, transactionController.getTransactionsByDateRange);
+router.get('/stats', auth, transactionController.getTransactionStats);
 
 export default router;

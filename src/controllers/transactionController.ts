@@ -61,3 +61,182 @@ export const createTransaction = async (req: Request & { user?: any }, res: Resp
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getTransactions = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const { limit = 20, skip = 0, type, category } = req.query;
+    
+    const filter: any = { userId: req.user._id };
+    if (type) filter.type = type;
+    if (category) filter.category = category;
+
+    const transactions = await Transaction.find(filter)
+      .sort({ date: -1 })
+      .limit(Number(limit))
+      .skip(Number(skip));
+
+    const total = await Transaction.countDocuments(filter);
+
+    res.json({
+      transactions,
+      total,
+      limit: Number(limit),
+      skip: Number(skip)
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getTransactionById = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const transaction = await Transaction.findOne({
+      _id: id,
+      userId: req.user._id
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    res.json(transaction);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateTransaction = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { type, amount, description, category, date, tags } = req.body;
+
+    const oldTransaction = await Transaction.findOne({
+      _id: id,
+      userId: req.user._id
+    });
+
+    if (!oldTransaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    // Calculate balance adjustment
+    const oldChange = oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount;
+    const newChange = type === 'income' ? amount : -amount;
+    const balanceAdjustment = newChange - oldChange;
+
+    // Update transaction
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      id,
+      { type, amount, description, category, date: date ? new Date(date) : undefined, tags },
+      { new: true }
+    );
+
+    // Update user balance
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $inc: { currentBalance: balanceAdjustment } },
+      { new: true }
+    );
+
+    res.json({
+      message: 'Transaction updated successfully',
+      transaction: updatedTransaction
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteTransaction = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const transaction = await Transaction.findOneAndDelete({
+      _id: id,
+      userId: req.user._id
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    // Reverse balance change
+    const balanceChange = transaction.type === 'income' ? -transaction.amount : transaction.amount;
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $inc: { currentBalance: balanceChange } },
+      { new: true }
+    );
+
+    res.json({ message: 'Transaction deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getTransactionsByCategory = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const { category } = req.params;
+
+    const transactions = await Transaction.find({
+      userId: req.user._id,
+      category
+    }).sort({ date: -1 });
+
+    res.json(transactions);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getTransactionsByDateRange = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'startDate and endDate are required' });
+    }
+
+    const transactions = await Transaction.find({
+      userId: req.user._id,
+      date: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) }
+    }).sort({ date: -1 });
+
+    res.json(transactions);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getTransactionStats = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    const transactions = await Transaction.find({ userId: req.user._id });
+
+    const totalIncome = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpenses = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const expensesByCategory = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((acc: any, t) => {
+        acc[t.category] = (acc[t.category] || 0) + t.amount;
+        return acc;
+      }, {});
+
+    res.json({
+      totalIncome,
+      totalExpenses,
+      netCashflow: totalIncome - totalExpenses,
+      expensesByCategory,
+      transactionCount: transactions.length
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
