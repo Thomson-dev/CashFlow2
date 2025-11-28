@@ -62,6 +62,7 @@ export const createTransaction = async (req: Request & { user?: any }, res: Resp
   }
 };
 
+
 export const getTransactions = async (req: Request & { user?: any }, res: Response) => {
   try {
     const { limit = 20, skip = 0, type, category } = req.query;
@@ -87,6 +88,8 @@ export const getTransactions = async (req: Request & { user?: any }, res: Respon
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 export const getTransactionById = async (req: Request & { user?: any }, res: Response) => {
   try {
