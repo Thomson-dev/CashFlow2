@@ -357,7 +357,7 @@ export const getInsightsPanel = async (req: Request & { user?: any }, res: Respo
           businessInfo,
           userInfo
         },
-        { timeout: 10000 }
+        { timeout: 20000 }
       );
 
       const aiData = aiResponse.data;
